@@ -1,0 +1,14 @@
+{
+  "targets": {
+    "udemy-ionicc": {
+      "hosting": {
+        "app": [
+          "udemy-ionicc"
+        ]
+      }
+    }
+  },
+  "projects": {
+    "default": "udemy-ionicc"
+  }
+}

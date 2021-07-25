@@ -1,0 +1,71 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{isLogin ? 'Login' : 'Register'}}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form #f="ngForm" (ngSubmit)="onSubmit(f)">
+    <ion-grid>
+      <ion-row>
+        <ion-col sizeSm="6" offsetSm="3">
+          <ion-list>
+            <ion-item>
+              <ion-label position="floating">Email</ion-label>
+              <ion-input
+                type="email"
+                ngModel
+                name="email"
+                required
+                email
+                #emailCtrl="ngModel"
+              ></ion-input>
+            </ion-item>
+            <ion-item
+              *ngIf="!emailCtrl.valid && emailCtrl.touched"
+              lines="none"
+            >
+              <ion-label>Should be a valid email!</ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-label position="floating">Password</ion-label>
+              <ion-input
+                type="password"
+                ngModel
+                name="password"
+                required
+                minlength="6"
+                #pswdCtrl="ngModel"
+              ></ion-input>
+            </ion-item>
+            <ion-item *ngIf="!pswdCtrl.valid && pswdCtrl.touched" lines="none">
+              <ion-label>Please provide valid password</ion-label>
+            </ion-item>
+          </ion-list>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col sizeSm="6" offsetSm="3">
+          <ion-button
+            color="primary"
+            class="center-btn text-uppercase"
+            *ngIf="!isLoading"
+            type="submit"
+            expand="block"
+            [disabled]="!f.valid"
+            >Sign {{isLogin ? 'in' : 'up'}}</ion-button
+          >
+          <ion-button
+            color="primary"
+            fill="clear"
+            expand="block"
+            type="button"
+            (click)="onSwitchAuthMode()"
+            >Switch to {{ isLogin ? 'Register' : 'Login' }}</ion-button
+          >
+          <ion-spinner color="primary" *ngIf="isLoading"></ion-spinner>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </form>
+</ion-content>
