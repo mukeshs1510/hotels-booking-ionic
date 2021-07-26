@@ -6,6 +6,7 @@ import { map, switchMap } from 'rxjs/operators';
 import { Coordinates, PlaceLocation } from 'src/app/place/location.modal';
 import { MapModalComponent } from '../../map-modal/map-modal.component';
 import { Plugins, Capacitor } from '@capacitor/core'
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-location-pickers',
@@ -55,11 +56,15 @@ export class LocationPickersComponent implements OnInit {
       this.showErrorAlert()
       return;
     } else {
+      this.isLoading = true
       Plugins.Geolocation.getCurrentPosition()
       .then(geoPos => {
         const coordinates: Coordinates = {lat: geoPos.coords.latitude, lng: geoPos.coords.longitude}
+        this.createPlace(coordinates.lat, coordinates.lng)
+        this.isLoading = false
       })
       .catch(err => {
+        this.isLoading = false
         this.showErrorAlert()
       })
     }
@@ -68,7 +73,8 @@ export class LocationPickersComponent implements OnInit {
   private showErrorAlert() {
     this.alertCtrl.create({
       header: 'Could not fetch location',
-      message: 'Please use the map to pick a location'
+      message: 'Please use the map to pick a location',
+      buttons: ['Ok']
     }).then(al => al.present())
   }
 
@@ -80,14 +86,29 @@ export class LocationPickersComponent implements OnInit {
         if(!modalData) {
           return;
         } 
-        const pickedAddress: PlaceLocation = {
+        const coordinates: Coordinates = {
           lat: modalData.data.lat,
           lng: modalData.data.lng,
-          address: null,
-          staticMapImgUrl: null,
         }
-        this.isLoading = true
-        this.getAddress(modalData.data.lat, modalData.data.lng)
+
+        this.createPlace(coordinates.lat, coordinates.lng)
+        
+      })
+      modal.present()
+    })
+  }
+
+  private createPlace(lat: number, lng: number) {
+
+    const pickedAddress: PlaceLocation = {
+      lat: lat,
+      lng: lng,
+      address: null,
+      staticMapImgUrl: null,
+    }
+
+    this.isLoading = true
+        this.getAddress(lat, lng)
         .pipe(switchMap(address => {
           pickedAddress.address = address;
           return of(this.getMapImg(
@@ -101,13 +122,10 @@ export class LocationPickersComponent implements OnInit {
           this.isLoading = false
           this.locationPick.emit(pickedAddress)
         })
-      })
-      modal.present()
-    })
   }
 
   private getAddress(lat: number, lng: number) {
-    return this.http.get<any>('geocoding api //224').pipe(map(geoData => {
+    return this.http.get<any>('https://www.google.com/maps/embed/v1/MAP_MODE?key='+environment.googleApiKey+'&PARAMETERS').pipe(map(geoData => {
       if(!geoData || !geoData.results || geoData.result.length === 0) {
         return null;
       }
