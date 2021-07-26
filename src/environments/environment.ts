@@ -5,6 +5,7 @@
 export const environment = {
   production: false,
   googleApiKey: 'AIzaSyBBUiGBLahATFgXLj7s_iRFLDPCNkgulJg',
+  firebaseAuthApiKey: 'AIzaSyBX0pRIbyuhXsxv4HM7K9uR_SK8Pom8Ock',
   firebaseConfig: {
     apiKey: "AIzaSyBX0pRIbyuhXsxv4HM7K9uR_SK8Pom8Ock",
     authDomain: "udemy-ionicc.firebaseapp.com",
