@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ActionSheetController, AlertController, LoadingController, ModalController, NavController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { AuthService } from 'src/app/auth/service/auth.service';
 import { BookingService } from 'src/app/bookings/bookings.service';
 import { CreateBookingComponent } from 'src/app/bookings/create-booking/create-booking.component';
@@ -41,9 +42,17 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
        return
       }
       this.isLoading = true
-      this.placeSub = this.placeService.getPlace(pm.get('placeId')).subscribe(place => {
+      let fetchedUserId: string
+      this.authService.userId.pipe(switchMap(userId => {
+        if (!userId) {
+          throw new Error("No user id found!")
+        } else {
+          fetchedUserId = userId
+          return this.placeService.getPlace(pm.get('placeId'))
+        }
+      })).subscribe(place => {
         this.place = place
-        this.isBookable = place.id !== this.authService.userId;
+        this.isBookable = place.id !== fetchedUserId;
         this.isLoading = false
       }, error => {
         this.alertCtrl.create({

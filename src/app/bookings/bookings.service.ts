@@ -40,22 +40,29 @@ export class BookingService {
         firstName: string, lastName: string, guestNumber: number,
         dateFrom: Date, dateTo: Date) {
             let genId: string
-            const newBooking = new BookingsModel(
-                Math.random().toString(),
-                placeId,
-                this.authSerice.userId,
-                placeTitle,
-                placeImg,
-                firstName,
-                lastName,
-                guestNumber,
-                dateFrom,
-                dateTo
-            );
-            return this.http.post<{name: string}>(
-                "https://udemy-ionicc-default-rtdb.firebaseio.com/bookings.json",
-                { ...newBooking, id: null }
-            ).pipe(switchMap((resData) => {
+            let newBooking: BookingsModel
+            return this.authSerice.userId.pipe(take(1), switchMap(userId => {
+                if(!userId) {
+                    throw new Error("No user id found!")
+                } else {
+                    newBooking = new BookingsModel(
+                        Math.random().toString(),
+                        placeId,
+                        userId,
+                        placeTitle,
+                        placeImg,
+                        firstName,
+                        lastName,
+                        guestNumber,
+                        dateFrom,
+                        dateTo
+                    );
+                    return this.http.post<{name: string}>(
+                        "https://udemy-ionicc-default-rtdb.firebaseio.com/bookings.json",
+                        { ...newBooking, id: null }
+                    )
+                }
+            }), switchMap((resData) => {
                 genId = resData.name
                 return this.bookings
             }), 
@@ -82,9 +89,15 @@ export class BookingService {
     }
 
     fetchBookings() {
-        return this.http.get<{[key: string]: BookingData}>(
-            `https://udemy-ionicc-default-rtdb.firebaseio.com/bookings.json?orderBy="userId"&equalTo="${this.authSerice.userId}"`
-        ).pipe(map(bookingData => {
+        return this.authSerice.userId.pipe(switchMap(userId => {
+            if (!userId) { 
+                throw new Error("User not found!")
+            } else {
+            return this.http.get<{[key: string]: BookingData}>(
+                `https://udemy-ionicc-default-rtdb.firebaseio.com/bookings.json?orderBy="userId"&equalTo="${userId}"`
+            )
+        }
+        }), map(bookingData => {
             const booking = [];
             for(const key in bookingData) {
                 if(bookingData.hasOwnProperty(key)) {

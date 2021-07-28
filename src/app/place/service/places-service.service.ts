@@ -55,13 +55,19 @@ export class PlacesServiceService {
 
   addPlace(title: string, desc: string, price: number, dateFrom: Date, dateTo: Date, location: PlaceLocation) {
     let gereratedId: string;
-    const newPlace = new PlacesModel(
-      Math.random().toString(),title, desc, 'https://www.planetware.com/wpimages/2020/01/india-in-pictures-beautiful-places-to-photograph-kapaleeshwarar-temple.jpg',price,dateFrom, 
-      dateTo, this.authService.userId, location);
-      
-      return this.http.post<{name: string}>("https://udemy-ionicc-default-rtdb.firebaseio.com/offers-places.json", { ...newPlace, id: null })
-      .pipe(
-        switchMap(resData => {
+    let newPlace: PlacesModel
+    return this.authService.userId.pipe(take(1), switchMap(userId => {
+      if (!userId) {
+        throw new Error("No user found!")
+      } else {
+        newPlace = new PlacesModel(
+          Math.random().toString(),title, desc, 'https://www.planetware.com/wpimages/2020/01/india-in-pictures-beautiful-places-to-photograph-kapaleeshwarar-temple.jpg',price,dateFrom, 
+          dateTo, userId, location);
+          return this.http.post<{name: string}>("https://udemy-ionicc-default-rtdb.firebaseio.com/offers-places.json", 
+          { ...newPlace, id: null }
+          )
+      }
+    }), switchMap(resData => {
           gereratedId = resData.name
           return this.Places
         }),
